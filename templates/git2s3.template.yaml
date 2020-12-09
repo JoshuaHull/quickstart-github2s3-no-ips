@@ -15,7 +15,6 @@ Metadata:
           default: Git Pull Settings
         Parameters:
           - ApiSecret
-          - AllowedIps
           - ExcludeGit
       - Label:
           default: AWS Quick Start Configuration
@@ -24,8 +23,6 @@ Metadata:
           - QSS3BucketRegion
           - QSS3KeyPrefix
     ParameterLabels:
-      AllowedIps:
-        default: Allowed IPs
       ApiSecret:
         default: API Secret
       CustomDomainName:
@@ -41,11 +38,6 @@ Metadata:
       ExcludeGit:
         default: Exclude Git
 Parameters:
-  AllowedIps:
-    Description: gitpull method only. Comma seperated list of IP CIDR blocks for source
-      IP authentication. The BitBucket Cloud IP ranges are provided as defaults.
-    Type: String
-    Default: 18.205.93.0/25,18.234.32.128/25,13.52.5.0/25
   ApiSecret:
     Description: 'gitpull method only. WebHook Secrets for use with GitHub Enterprise
       and GitLab. If a secret is matched IP range authentication is bypassed. Cannot
@@ -109,10 +101,6 @@ Parameters:
     AllowedValues: ['True', 'False']
 
 Conditions:
-  UseAllowedIps: !Not
-    - !Equals
-      - !Ref 'AllowedIps'
-      - ''
   UseApiSecret: !Not
     - !Equals
       - !Ref 'ApiSecret'
@@ -847,7 +835,6 @@ Resources:
                       - "    \"request-id\" : \"$context.requestId\",\n"
                       - "    \"resource-id\" : \"$context.resourceId\",\n"
                       - "    \"resource-path\" : \"$context.resourcePath\",\n"
-                      - "    \"allowed-ips\" : \"$stageVariables.allowedips\",\n"
                       - "    \"api-secrets\" : \"$stageVariables.apisecrets\",\n"
                       - '    "key-bucket" : "'
                       - !Ref 'KeyBucket'
@@ -885,10 +872,6 @@ Resources:
       StageName: Prod
       Variables:
         outputbucket: !Ref 'OutputBucket'
-        allowedips: !If
-          - UseAllowedIps
-          - !Ref 'AllowedIps'
-          - !Ref 'AWS::NoValue'
         apisecrets: !If
           - UseApiSecret
           - !Ref 'ApiSecret'

@@ -10,7 +10,6 @@ import os
 import time
 import stat
 import shutil
-from ipaddress import ip_network, ip_address
 import logging
 import hmac
 import hashlib
@@ -40,19 +39,9 @@ def lambda_handler(event, context):
     keybucket = event['context']['key-bucket']
     outputbucket = event['context']['output-bucket']
     pubkey = event['context']['public-key']
-    # Source IP ranges to allow requests from, if the IP is in one of these the request will not be chacked for an api key
-    ipranges = []
-    if event['context']['allowed-ips']:
-        for i in event['context']['allowed-ips'].split(','):
-            ipranges.append(ip_network(u'%s' % i))
     # APIKeys, it is recommended to use a different API key for each repo that uses this function
     apikeys = event['context']['api-secrets'].split(',')
-    ip = ip_address(event['context']['source-ip'])
     secure = False
-    if ipranges:
-        for net in ipranges:
-            if ip in net:
-                secure = True
     if 'X-Git-Token' in event['params']['header'].keys():
         print (event['params']['header']['X-Git-Token'])
         if event['params']['header']['X-Git-Token'] in apikeys:
